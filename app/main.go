@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"net"
 	"os"
+
+	"github.com/codecrafters-io/http-server-starter-go/parser"
 )
 
-// Ensures gofmt doesn't remove the "net" and "os" imports above (feel free to remove this!)
+// Ensures gofmt doesn't remove the "net" and "os" imports above
 var _ = net.Listen
 var _ = os.Exit
 
@@ -22,7 +24,15 @@ func main() {
 		fmt.Println("Error accepting connection: ", err.Error())
 		os.Exit(1)
 	}
-
-	conn.Write([]byte("HTTP/1.1 200 OK\r\n\r\n"))
+	req, err := parser.ParseRequest(conn)
+	if err != nil {
+		fmt.Println("Error parsing request: ", err.Error())
+		os.Exit(1)
+	}
+	if req.Path != "/" {
+		conn.Write([]byte("HTTP/1.1 404 Not Found\r\n\r\n"))
+	} else {
+		conn.Write([]byte("HTTP/1.1 200 OK\r\n\r\n"))
+	}
 	conn.Close()
 }
